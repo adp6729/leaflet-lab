@@ -230,10 +230,12 @@ function processData(data){
 };
 
 var featureSelected = 0
+var currentAttribute = 0
     
 function createPropSymbols(data, map, attributes, idx) {
     
     var attribute = attributes[idx]
+    currentAttribute = attribute
     
     //create marker options
     var geojsonMarkerOptions = {
@@ -259,18 +261,22 @@ function createPropSymbols(data, map, attributes, idx) {
             if (strTest > -1) {
                 geojsonMarkerOptions.radius = calcPropRadius(attValue, 0.1)
                 details = ["Population", ""]
+                details2 = ["Percentage", "%"]
             } else {
                 geojsonMarkerOptions.radius = calcPropRadius(attValue, 600)
-                details = ["Percentage", "%"]
+                details = ["Percentage", "%"]                
+                details2 = ["Population", ""]
             }
             
             // Create circle marker layer
             var layer = L.circleMarker(latlng, geojsonMarkerOptions)
             
             // Build popup content string
+            var attStr2 = attribute.substring(0,11) + "Pop" + attribute.slice(-4)
             var popupContent = "<p><b>City:</b> " + feature.properties.CityState + "</p>"
             var year = attribute.slice(-4)
             popupContent += "<p><b>" + details[0] + " in " + year + ":</b> " + feature.properties[attribute] + details[1] + "</p>"
+            popupContent2 = popupContent + "<p><b>" + details2[0] + " in " + year + ":</b> " + feature.properties[attStr2] + details2[1] + "</p>"
 
             //bind the popup to the circle marker
             layer.bindPopup(popupContent, {
@@ -287,8 +293,8 @@ function createPropSymbols(data, map, attributes, idx) {
                     this.closePopup()
                 },
                 click: function(){
-                    $("#panel").html(popupContent)
                     featureSelected = feature
+                    updatePanel(currentAttribute, details, details2)
                 }
             })
 
@@ -353,6 +359,7 @@ function createSequenceControls(map, attributes){
         
         //Step 9: pass new attribute to update symbols
         updatePropSymbols(map, attributes[index])
+        currentAttribute = attributes[index]
         
 //        console.log(index, attributes[index])
     })
@@ -364,6 +371,7 @@ function createSequenceControls(map, attributes){
         
         //Step 9: pass new attribute to update symbols
         updatePropSymbols(map, attributes[index])
+        currentAttribute = attributes[index]
         
 //        console.log(index, attributes[index])
     })
@@ -400,18 +408,21 @@ function updatePropSymbols(map, attribute) {
             })
             
             if (featureSelected != 0) {
-                // Build popup content string
-                var popupContent = "<p><b>City:</b> " + featureSelected.properties.CityState + "</p>"
-                var year = attribute.slice(-4)
-                var attStr2 = attribute.substring(0,11) + "Pop" + attribute.slice(-4)
-                console.log(attStr2)
-                popupContent += "<p><b>" + details[0] + " in " + year + ":</b> " + featureSelected.properties[attribute] + details[1] + "</p>"
-                popupContent += "<p><b>" + details2[0] + " in " + year + ":</b> " + featureSelected.properties[attStr2] + details2[1] + "</p>"
-                
-                $("#panel").html(popupContent)
+                updatePanel(attribute, details, details2)
             }
         };
     });
+}
+
+function updatePanel(attribute, details, details2) {
+    console.log(attribute, featureSelected)
+    var popupContent = "<p><b>City:</b> " + featureSelected.properties.CityState + "</p>"
+    var year = attribute.slice(-4)
+    var attStr2 = attribute.substring(0,11) + "Pop" + attribute.slice(-4)
+    popupContent += "<p><b>" + details[0] + " in " + year + ":</b> " + featureSelected.properties[attribute] + details[1] + "</p>"
+    popupContent += "<p><b>" + details2[0] + " in " + year + ":</b> " + featureSelected.properties[attStr2] + details2[1] + "</p>"
+
+    $("#panel").html(popupContent)
 }
 
 $(document).ready(createMap)
