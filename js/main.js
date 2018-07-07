@@ -229,6 +229,8 @@ function processData(data){
     return attributes;
 };
 
+var featureSelected = 0
+    
 function createPropSymbols(data, map, attributes, idx) {
     
     var attribute = attributes[idx]
@@ -286,6 +288,7 @@ function createPropSymbols(data, map, attributes, idx) {
                 },
                 click: function(){
                     $("#panel").html(popupContent)
+                    featureSelected = feature
                 }
             })
 
@@ -378,9 +381,11 @@ function updatePropSymbols(map, attribute) {
             if (strTest > -1) {
                 var radius = calcPropRadius(Number(props[attribute]), 0.1)
                 details = ["Population", ""]
+                details2 = ["Percentage", "%"]
             } else {
                 var radius = calcPropRadius(Number(props[attribute]), 600)
                 details = ["Percentage", "%"]
+                details2 = ["Population", ""]
             }
             layer.setRadius(radius)
             
@@ -393,6 +398,18 @@ function updatePropSymbols(map, attribute) {
             layer.bindPopup(popupContent, {
                 offset: new L.Point(0,-radius)
             })
+            
+            if (featureSelected != 0) {
+                // Build popup content string
+                var popupContent = "<p><b>City:</b> " + featureSelected.properties.CityState + "</p>"
+                var year = attribute.slice(-4)
+                var attStr2 = attribute.substring(0,11) + "Pop" + attribute.slice(-4)
+                console.log(attStr2)
+                popupContent += "<p><b>" + details[0] + " in " + year + ":</b> " + featureSelected.properties[attribute] + details[1] + "</p>"
+                popupContent += "<p><b>" + details2[0] + " in " + year + ":</b> " + featureSelected.properties[attStr2] + details2[1] + "</p>"
+                
+                $("#panel").html(popupContent)
+            }
         };
     });
 }
