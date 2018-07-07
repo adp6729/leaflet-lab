@@ -186,9 +186,11 @@ function getData(map){
     $.ajax("data/MultiRacial.geojson", {
         dataType: "json",
         success: function(response){
+            var attributes = processData(response);
             
             //call function to create proportional symbols, put in a layer
-            geoJsonLayer = createPropSymbols(response, map);
+            geoJsonLayer = createPropSymbols(response, map, attributes, 0)
+            createSequenceControls(map, attributes);
             
             //create a L.markerClusterGroup layer
             var markers = L.markerClusterGroup();
@@ -205,9 +207,31 @@ function getData(map){
     })
 }
 
-function createPropSymbols(data, map) {
+//Above Example 3.8...Step 3: build an attributes array from the data
+function processData(data){
+    //empty array to hold attributes
+    var attributes = [];
+
+    //properties of the first feature in the dataset
+    var properties = data.features[0].properties;
+
+    //push each attribute name into attributes array
+    for (var attribute in properties){
+        //only take attributes with population values
+        if (attribute.indexOf("Perc") > -1){
+            attributes.push(attribute);
+        };
+    };
+
+    //check result
+//    console.log(attributes);
+
+    return attributes;
+};
+
+function createPropSymbols(data, map, attributes, idx) {
     
-    var attribute = "MultiRacialPerc2010"
+    var attribute = attributes[idx]
     
     //create marker options
     var geojsonMarkerOptions = {
@@ -218,19 +242,6 @@ function createPropSymbols(data, map) {
         opacity: 1,
         fillOpacity: 0.6
     }
-    
-    //calculate the radius of each proportional symbol
-    function calcPropRadius(attValue, scaleFactor) {
-        
-        //area based on attribute value and scale factor
-        var area = attValue * scaleFactor;
-        
-        //radius calculated based on area
-        var radius = Math.sqrt(area/Math.PI);
-
-        return radius;
-    };
-
     
     //create a Leaflet GeoJSON layer
     var geoJsonLayer = L.geoJson(data, {
@@ -244,10 +255,10 @@ function createPropSymbols(data, map) {
             // Step 6: Give each feature's circle marker a radius based on its attribute value            
             var strTest = attribute.search("Pop")
             if (strTest > -1) {
-                geojsonMarkerOptions.radius = calcPropRadius(attValue, 0.1);
+                geojsonMarkerOptions.radius = calcPropRadius(attValue, 0.1)
                 details = ["Population", ""]
             } else {
-                geojsonMarkerOptions.radius = calcPropRadius(attValue, 600);
+                geojsonMarkerOptions.radius = calcPropRadius(attValue, 600)
                 details = ["Percentage", "%"]
             }
             
@@ -257,7 +268,7 @@ function createPropSymbols(data, map) {
             // Build popup content string
             var popupContent = "<p><b>City:</b> " + feature.properties.CityState + "</p>"
             var year = attribute.slice(-4)
-            popupContent += "<p><b>" + details[0] + " in " + year + ":</b> " + feature.properties[attribute] + details[1] + "</p>";
+            popupContent += "<p><b>" + details[0] + " in " + year + ":</b> " + feature.properties[attribute] + details[1] + "</p>"
 
             //bind the popup to the circle marker
             layer.bindPopup(popupContent, {
@@ -274,7 +285,7 @@ function createPropSymbols(data, map) {
                     this.closePopup()
                 },
                 click: function(){
-                    $("#panel").html(popupContent);
+                    $("#panel").html(popupContent)
                 }
             })
 
@@ -284,4 +295,106 @@ function createPropSymbols(data, map) {
     return geoJsonLayer    
 }
 
-$(document).ready(createMap);
+//calculate the radius of each proportional symbol
+function calcPropRadius(attValue, scaleFactor) {
+
+    //area based on attribute value and scale factor
+    var area = attValue * scaleFactor
+
+    //radius calculated based on area
+    var radius = Math.sqrt(area/Math.PI)
+
+    return radius
+}
+
+//Step 1: Create new sequence controls
+function createSequenceControls(map, attributes){
+    //create range input element (slider)
+    $('#panel2').append('<input class="range-slider" type="range">')
+    
+    //below Example 3.4...add skip buttons
+    $('#panel2').append('<button class="skip" id="reverse">Reverse</button>')
+    $('#panel2').append('<button class="skip" id="forward">Skip</button>')
+    
+    //Below Example 3.5...replace button content with images
+    $('#reverse').html('<img src="img/leftarrow.png">')
+    $('#forward').html('<img src="img/rightarrow.png">')
+    
+    //set slider attributes
+    $('.range-slider').attr({
+        max: 6,
+        min: 0,
+        value: 0,
+        step: 1
+    })
+    
+    //Below Example 3.6 in createSequenceControls()
+    //Step 5: click listener for buttons
+    $('.skip').click(function(){
+        //get the old index value
+        var index = $('.range-slider').val()
+
+        //Step 6: increment or decrement depending on button clicked
+        if ($(this).attr('id') == 'forward'){
+            index++
+            //Step 7: if past the last attribute, wrap around to first attribute
+            index = index > 6 ? 0 : index
+        } else if ($(this).attr('id') == 'reverse'){
+            index--
+            //Step 7: if past the first attribute, wrap around to last attribute
+            index = index < 0 ? 6 : index
+        }
+
+        //Step 8: update slider
+        $('.range-slider').val(index)
+        
+        //Step 9: pass new attribute to update symbols
+        updatePropSymbols(map, attributes[index])
+        
+//        console.log(index, attributes[index])
+    })
+
+    //Step 5: input listener for slider
+    $('.range-slider').on('input', function(){
+        //Step 6: get the new index value
+        var index = $(this).val()
+        
+        //Step 9: pass new attribute to update symbols
+        updatePropSymbols(map, attributes[index])
+        
+//        console.log(index, attributes[index])
+    })
+}
+
+//Step 10: Resize proportional symbols according to new attribute values
+function updatePropSymbols(map, attribute) {
+    map.eachLayer(function(layer){
+        if (layer.feature && layer.feature.properties[attribute]){
+            //access feature properties
+            var props = layer.feature.properties
+
+            //update each feature's radius based on new attribute values
+            var strTest = attribute.search("Pop")
+            if (strTest > -1) {
+                var radius = calcPropRadius(Number(props[attribute]), 0.1)
+                details = ["Population", ""]
+            } else {
+                var radius = calcPropRadius(Number(props[attribute]), 600)
+                details = ["Percentage", "%"]
+            }
+            layer.setRadius(radius)
+            
+            // Build popup content string
+            var popupContent = "<p><b>City:</b> " + props.CityState + "</p>"
+            var year = attribute.slice(-4)
+            popupContent += "<p><b>" + details[0] + " in " + year + ":</b> " + props[attribute] + details[1] + "</p>"
+            
+            //replace the layer popup
+            layer.bindPopup(popupContent, {
+                offset: new L.Point(0,-radius)
+            })
+        };
+    });
+}
+
+$(document).ready(createMap)
