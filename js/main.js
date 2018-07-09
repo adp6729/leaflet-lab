@@ -163,6 +163,7 @@ function createGeoJSONMap() {
 //5. For each feature, determine its value for the selected attribute
 //6. Give each feature's circle marker a radius based on its attribute value
 
+var currentMap = 0
 //function to instantiate the Leaflet map
 function createMap(){
     //create the map
@@ -175,10 +176,14 @@ function createMap(){
     L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
     }).addTo(map)
+    currentMap = map
 
     //call getData function
     getData(map)
 }
+
+var currentLayer = 0
+var currentAttributes = 0
 
 //Example 2.7 line 1...function to retrieve the data and place it on the map
 function getData(map){
@@ -186,23 +191,23 @@ function getData(map){
     $.ajax("data/MultiRacial.geojson", {
         dataType: "json",
         success: function(response){
-            var attributes = processData(response);
+            var attributes = processData(response)
+            currentAttributes = attributes
             
             //call function to create proportional symbols, put in a layer
-            geoJsonLayer = createPropSymbols(response, map, attributes, 0)
-            createSequenceControls(map, attributes);
+            geoJsonLayer = createPropSymbols(response, map, attributes, 0, 'all')
+            currentLayer = geoJsonLayer
+            createSequenceControls(map, attributes)
             
             //create a L.markerClusterGroup layer
-            var markers = L.markerClusterGroup();
-            
-            //add geojson to marker cluster layer
-            markers.addLayer(geoJsonLayer);
-            
-            //add marker cluster layer to map
+            //add geojson to marker cluster layer, add to map
+//            var markers = L.markerClusterGroup()
+//            markers.addLayer(geoJsonLayer)
 //            map.addLayer(markers);
             
             //add geo JSON layer to map
-            map.addLayer(geoJsonLayer);
+            map.addLayer(geoJsonLayer)
+            markers = geoJsonLayer
         }
     })
 }
@@ -219,23 +224,27 @@ function processData(data){
     for (var attribute in properties){
         //only take attributes with population values
         if (attribute.indexOf("Perc") > -1){
-            attributes.push(attribute);
-        };
-    };
+            attributes.push(attribute)
+        }
+    }
 
     //check result
 //    console.log(attributes);
 
-    return attributes;
-};
+    return attributes
+}
 
 var featureSelected = 0
 var currentAttribute = 0
+var currentAttribute2 = 0
     
-function createPropSymbols(data, map, attributes, idx) {
+function createPropSymbols(data, map, attributes, idx, filterStr) {
     
     var attribute = attributes[idx]
     currentAttribute = attribute
+    var attStr2 = attribute.substring(0,11) + "Pop" + attribute.slice(-4)
+    currentAttribute2 = attStr2
+    console.log(filterStr)
     
     //create marker options
     var geojsonMarkerOptions = {
@@ -247,8 +256,7 @@ function createPropSymbols(data, map, attributes, idx) {
         fillOpacity: 0.6
     }
     
-    //create a Leaflet GeoJSON layer
-    var geoJsonLayer = L.geoJson(data, {
+    var geoJsonOptions = {
         pointToLayer: function (feature, latlng){
             // Step 5: For each feature, determine its value for the selected attribute
             var attValue = Number(feature.properties[attribute])
@@ -272,7 +280,7 @@ function createPropSymbols(data, map, attributes, idx) {
             var layer = L.circleMarker(latlng, geojsonMarkerOptions)
             
             // Build popup content string
-            var attStr2 = attribute.substring(0,11) + "Pop" + attribute.slice(-4)
+            
             var popupContent = "<p><b>City:</b> " + feature.properties.CityState + "</p>"
             var year = attribute.slice(-4)
             popupContent += "<p><b>" + details[0] + " in " + year + ":</b> " + feature.properties[attribute] + details[1] + "</p>"
@@ -299,7 +307,29 @@ function createPropSymbols(data, map, attributes, idx) {
             })
 
             return layer;
-        }})
+        },
+        filter: function(feature, layer, filterStr) {
+            // If the data-filter attribute is set to "all", return all (true)
+            // Otherwise, filter markers based on population size
+            var returnBool = false
+            console.log(feature, layer)
+//            if (filterStr === 'all'){returnBool === true}
+//            else if (filterStr === 'big'){
+//                console.log(feature, layer)
+//            }
+//            else if (filterStr === 'medium'){
+//                console.log(f)
+//            }
+//            else if (filterStr === 'small'){
+//                console.log(f)
+//            }
+//            return returnBool
+            return true
+        }
+    }
+    
+    //create a Leaflet GeoJSON layer
+    var geoJsonLayer = L.geoJson(data, geoJsonOptions)
     
     return geoJsonLayer    
 }
@@ -360,6 +390,7 @@ function createSequenceControls(map, attributes){
         //Step 9: pass new attribute to update symbols
         updatePropSymbols(map, attributes[index])
         currentAttribute = attributes[index]
+        currentAttribute2 = attributes[index].substring(0,11) + "Pop" + attributes[index].slice(-4)
         
 //        console.log(index, attributes[index])
     })
@@ -372,6 +403,7 @@ function createSequenceControls(map, attributes){
         //Step 9: pass new attribute to update symbols
         updatePropSymbols(map, attributes[index])
         currentAttribute = attributes[index]
+        currentAttribute2 = attributes[index].substring(0,11) + "Pop" + attributes[index].slice(-4)
         
 //        console.log(index, attributes[index])
     })
@@ -415,7 +447,7 @@ function updatePropSymbols(map, attribute) {
 }
 
 function updatePanel(attribute, details, details2) {
-    console.log(attribute, featureSelected)
+//    console.log(attribute, featureSelected)
     var popupContent = "<p><b>City:</b> " + featureSelected.properties.CityState + "</p>"
     var year = attribute.slice(-4)
     var attStr2 = attribute.substring(0,11) + "Pop" + attribute.slice(-4)
@@ -424,5 +456,34 @@ function updatePanel(attribute, details, details2) {
 
     $("#panel").html(popupContent)
 }
+
+function createFilterControls(map, geoJsonLayer) {
+    
+    $('.menu-ui a').on('click', function() {
+        // For each filter link, get the 'data-filter' attribute value.
+        var filter = $(this).data('filter')
+        $(this).addClass('active').siblings().removeClass('active')
+        geoJsonLayer.set
+        geoJsonLayer.setFilter(function(f) {
+            // If the data-filter attribute is set to "all", return all (true)
+            // Otherwise, filter markers based on population size
+            var returnBool = false
+            if (filter === 'all'){returnBool === true}
+            else if (filter === 'big'){
+                console.log(f)
+            }
+            else if (filter === 'medium'){
+                console.log(f)
+            }
+            else if (filter === 'small'){
+                console.log(f)
+            }
+            return returnBool
+        })
+    return false
+    })
+    
+}
+
 
 $(document).ready(createMap)
