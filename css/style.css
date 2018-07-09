@@ -82,6 +82,7 @@
 .menu-ui {
     background:#fff;
     position:absolute;
+    display: inline-block;
     z-index: 1;
     top:400px;right:20px;
     border-radius:3px;
