@@ -6,7 +6,7 @@
 
 /*Map*/
 #map { 
-    height: 680px;
+    height: 650px;
     width: 80%;
     display: inline-block;
     z-index: 1;
@@ -34,7 +34,7 @@
     -webkit-appearance: none;  /* Override default CSS styles */
     appearance: none;
     width: 88%; /* Full-width */
-    height: 15px;
+    height: 35px;
     border-radius: 5px;
     background: #d3d3d3; /* Grey background */
     outline: none; /* Remove outline */
@@ -46,16 +46,16 @@
 .slider::-webkit-slider-thumb {
     -webkit-appearance: none; /* Override default look */
     appearance: none;
-    width: 25px; /* Set a specific slider handle width */
-    height: 25px;
+    width: 50px; /* Set a specific slider handle width */
+    height: 50px;
     border-radius: 50%;
     background: #4CAF50; /* Green background */
     cursor: pointer; /* Cursor on hover */
 }
 
 .slider::-moz-range-thumb {
-    width: 25px; /* Set a specific slider handle width */
-    height: 25px; /* Slider handle height */
+    width: 50px; /* Set a specific slider handle width */
+    height: 50px; /* Slider handle height */
     background: #4CAF50; /* Green background */
     cursor: pointer; /* Cursor on hover */
 }
@@ -66,7 +66,7 @@
 }
 
 #panel2 img{
-    height: 50px;
+    height: 30px;
     width: auto;
     outline: none;
 }
@@ -82,7 +82,7 @@
 .menu-ui {
     background:#fff;
     position:absolute;
-    top:400px;right:80px;
+    top:12%;right:23%;
     z-index: 1;
     border-radius:3px;
     width:120px;
