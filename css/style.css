@@ -33,8 +33,8 @@
 .range-slider {
     -webkit-appearance: none;  /* Override default CSS styles */
     appearance: none;
-    width: 88%; /* Full-width */
-    height: 35px;
+    width: 200px;
+    height: 28px;
     border-radius: 5px;
     background: #d3d3d3; /* Grey background */
     outline: none; /* Remove outline */
@@ -72,11 +72,11 @@
 }
 
 #forward {
-    float: right;
+    display: inline-block;
 }
 
 #reverse {
-    float: left;
+    display: inline-block;
 }
 
 .menu-ui {
@@ -117,4 +117,14 @@
 .menu-ui a.active:hover {
     background:#3887BE;
     color:#FFF;
+}
+
+#legend {
+    background:#fff;
+    position:absolute;
+    top:500px;left:40px;
+    z-index: 1;
+    border-radius:3px;
+    width:210px;
+    border:1px solid rgba(0,0,0,0.4);
 }

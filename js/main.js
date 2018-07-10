@@ -360,14 +360,16 @@ function calcPropRadius(attValue, scaleFactor) {
 //Step 1: Create new sequence controls
 function createSequenceControls(map, attributes){
     //create range input element (slider)
-    $('#panel2').append('<input class="range-slider" type="range">')
-    
     //below Example 3.4...add skip buttons
     $('#panel2').append('<button class="skip" id="reverse">Reverse</button>')
-    $('#panel2').append('<button class="skip" id="forward">Skip</button>')
+    
     
     //Below Example 3.5...replace button content with images
     $('#reverse').html('<img src="img/leftarrow.png">')
+    
+    $('#panel2').append('<input class="range-slider" type="range">')
+    $('#panel2').append('<button class="skip" id="forward">Skip</button>')
+    
     $('#forward').html('<img src="img/rightarrow.png">')
     
     //set slider attributes
@@ -426,24 +428,26 @@ function createSequenceControls(map, attributes){
 
 // Function to update the information panel on the right
 function updatePanel() {
-    // Determine the nature of the main variable
-    var strTest = currentAttribute.search("Pop")
-    if (strTest > -1) {
-        details = ["Population", ""]
-        details2 = ["Percentage", "%"]
-    } else {
-        details = ["Percentage", "%"]
-        details2 = ["Population", ""]
+    if (featureSelected != 0) {
+        // Determine the nature of the main variable
+        var strTest = currentAttribute.search("Pop")
+        if (strTest > -1) {
+            details = ["Population", ""]
+            details2 = ["Percentage", "%"]
+        } else {
+            details = ["Percentage", "%"]
+            details2 = ["Population", ""]
+        }
+
+        // Utilize current feature, currentAttributes to create popup content
+        var popupContent = "<p><b>City:</b> " + featureSelected.properties.CityState + "</p>"
+        var year = currentAttribute.slice(-4)
+        popupContent += "<p><b>" + details[0] + " in " + year + ":</b> " + featureSelected.properties[currentAttribute] + details[1] + "</p>"
+        popupContent += "<p><b>" + details2[0] + " in " + year + ":</b> " + featureSelected.properties[currentAttribute2] + details2[1] + "</p>"
+
+        // Update panel with new popup content
+        $("#panel").html(popupContent)
     }
-    
-    // Utilize current feature, currentAttributes to create popup content
-    var popupContent = "<p><b>City:</b> " + featureSelected.properties.CityState + "</p>"
-    var year = currentAttribute.slice(-4)
-    popupContent += "<p><b>" + details[0] + " in " + year + ":</b> " + featureSelected.properties[currentAttribute] + details[1] + "</p>"
-    popupContent += "<p><b>" + details2[0] + " in " + year + ":</b> " + featureSelected.properties[currentAttribute2] + details2[1] + "</p>"
-    
-    // Update panel with new popup content
-    $("#panel").html(popupContent)
 }
 
 // Click listener for the filter menu

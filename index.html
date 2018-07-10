@@ -26,14 +26,24 @@
 <!--        <div id="geoJSONmap"></div>-->
         
         
-        <div id=map></div>
+        <div id='map'></div>
         <nav class='menu-ui'>
           <a href='#' class='active' data-filter='all'>Show all</a>
           <a href='#' data-filter='big'>Above 30K</a>
           <a href='#' data-filter='medium'>10K-30K</a>
           <a href='#' data-filter='small'>Below 10K</a>
         </nav>
-		
+        <div id='legend'> 
+            <svg id="Layer_1" width="180px" height="200px">
+                <circle fill="#46d606" fill-opacity="0.6" stroke="#000000" cx="80" cy="120" r="58"/>
+                <text x="160" y="155">4%</text>
+                <circle fill="#46d606" fill-opacity="0.6" stroke="#000000" cx="80" cy="129.5" r="48.5"/>
+                <text x="160" y="120">7%</text>
+                <circle fill="#46d606" fill-opacity="0.6" stroke="#000000" cx="80" cy="141.3" r="36.7"/>
+                <text x="150" y="85">10%</text>
+                <text id='legendTitle' x="40" y="35">Percentage in 2010</text>
+            </svg>
+        </div>
         <div id="panel"></div>
         <div id="panel2"></div>
         
