@@ -21,6 +21,16 @@
     text-align: center;
 }
 
+/* Info Panel */
+#panel3 {
+    width: 17%;
+    padding: 10px;
+    position:absolute;
+    top:250px;right:10px;
+    vertical-align: top;
+    text-align: left;
+}
+
 /* Temporal Slider Panel */
 #panel2 {
     width: 75%;
